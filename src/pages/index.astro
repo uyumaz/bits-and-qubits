@@ -1,0 +1,100 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import BlogCard from '../components/BlogCard.astro';
+import { SITE_TITLE, SITE_DESCRIPTION, CATEGORIES } from '../consts';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .slice(0, 6);
+
+const categoryEntries = Object.entries(CATEGORIES) as [keyof typeof CATEGORIES, typeof CATEGORIES[keyof typeof CATEGORIES]][];
+
+const colorClasses = {
+  indigo: {
+    bg: 'bg-indigo-50 dark:bg-indigo-950/50',
+    border: 'border-indigo-200 dark:border-indigo-800',
+    text: 'text-indigo-600 dark:text-indigo-400',
+    hover: 'hover:border-indigo-300 dark:hover:border-indigo-700',
+  },
+  emerald: {
+    bg: 'bg-emerald-50 dark:bg-emerald-950/50',
+    border: 'border-emerald-200 dark:border-emerald-800',
+    text: 'text-emerald-600 dark:text-emerald-400',
+    hover: 'hover:border-emerald-300 dark:hover:border-emerald-700',
+  },
+  amber: {
+    bg: 'bg-amber-50 dark:bg-amber-950/50',
+    border: 'border-amber-200 dark:border-amber-800',
+    text: 'text-amber-600 dark:text-amber-400',
+    hover: 'hover:border-amber-300 dark:hover:border-amber-700',
+  },
+  pink: {
+    bg: 'bg-pink-50 dark:bg-pink-950/50',
+    border: 'border-pink-200 dark:border-pink-800',
+    text: 'text-pink-600 dark:text-pink-400',
+    hover: 'hover:border-pink-300 dark:hover:border-pink-700',
+  },
+} as const;
+---
+
+<BaseLayout>
+  <!-- Hero Section -->
+  <section class="relative overflow-hidden bg-gradient-to-b from-indigo-50 to-white px-4 py-20 dark:from-zinc-900 dark:to-zinc-950">
+    <div class="mx-auto max-w-4xl text-center">
+      <h1 class="mb-4 text-4xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100 sm:text-5xl md:text-6xl">
+        <span class="font-mono text-indigo-600 dark:text-indigo-400">⟨B|Q⟩</span>
+        <span class="block sm:inline"> {SITE_TITLE}</span>
+      </h1>
+      <p class="mx-auto max-w-2xl text-lg text-zinc-600 dark:text-zinc-400">
+        {SITE_DESCRIPTION}
+      </p>
+    </div>
+  </section>
+
+  <!-- Categories Section -->
+  <section class="mx-auto max-w-4xl px-4 py-16">
+    <h2 class="mb-8 text-2xl font-bold text-zinc-900 dark:text-zinc-100">Explore Topics</h2>
+    <div class="grid gap-4 sm:grid-cols-2">
+      {categoryEntries.map(([slug, category]) => {
+        const colors = colorClasses[category.color];
+        return (
+          <a
+            href={`/blog?category=${slug}`}
+            class:list={[
+              'group rounded-lg border p-6 transition-all',
+              colors.bg,
+              colors.border,
+              colors.hover,
+            ]}
+          >
+            <h3 class:list={['mb-2 font-semibold', colors.text]}>
+              {category.name}
+            </h3>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400">
+              {category.description}
+            </p>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+
+  <!-- Recent Posts Section -->
+  <section class="mx-auto max-w-4xl px-4 pb-16">
+    <div class="mb-8 flex items-center justify-between">
+      <h2 class="text-2xl font-bold text-zinc-900 dark:text-zinc-100">Recent Posts</h2>
+      <a
+        href="/blog"
+        class="text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+      >
+        View all posts &rarr;
+      </a>
+    </div>
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {posts.map((post) => (
+        <BlogCard post={post} />
+      ))}
+    </div>
+  </section>
+</BaseLayout>

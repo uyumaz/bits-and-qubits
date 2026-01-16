@@ -1,0 +1,50 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { CATEGORIES } from '../consts';
+import FormattedDate from './FormattedDate.astro';
+
+interface Props {
+  post: CollectionEntry<'blog'>;
+}
+
+const { post } = Astro.props;
+const category = CATEGORIES[post.data.category];
+
+const colorClasses = {
+  indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
+  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+  amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  pink: 'bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+} as const;
+---
+
+<article class="group relative flex flex-col rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
+  <div class="mb-3 flex items-center gap-3">
+    <span class:list={['inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', colorClasses[category.color]]}>
+      {category.name}
+    </span>
+    <span class="text-xs text-zinc-500 dark:text-zinc-400">
+      <FormattedDate date={post.data.pubDate} />
+    </span>
+  </div>
+
+  <h3 class="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+    <a href={`/blog/${post.slug}`} class="after:absolute after:inset-0">
+      {post.data.title}
+    </a>
+  </h3>
+
+  <p class="mb-4 flex-1 text-sm text-zinc-600 dark:text-zinc-400">
+    {post.data.description}
+  </p>
+
+  {post.data.tags.length > 0 && (
+    <div class="flex flex-wrap gap-2">
+      {post.data.tags.map((tag) => (
+        <span class="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
+          {tag}
+        </span>
+      ))}
+    </div>
+  )}
+</article>

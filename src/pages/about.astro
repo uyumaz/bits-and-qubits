@@ -1,0 +1,77 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { SITE_TITLE, SOCIAL_LINKS } from '../consts';
+---
+
+<BaseLayout title="About" description="Learn more about the author behind Bits & Qubits">
+  <div class="mx-auto max-w-3xl px-4 py-12">
+    <header class="mb-12 text-center">
+      <div class="mb-6 inline-flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-4xl font-bold text-white">
+        <span class="font-mono">⟨B|Q⟩</span>
+      </div>
+      <h1 class="mb-4 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+        About {SITE_TITLE}
+      </h1>
+      <p class="text-lg text-zinc-600 dark:text-zinc-400">
+        Where software engineering meets quantum curiosity
+      </p>
+    </header>
+
+    <div class="prose prose-zinc mx-auto dark:prose-invert">
+      <h2>Hello, World!</h2>
+      <p>
+        Welcome to <strong>Bits & Qubits</strong> — a space where I explore the intersection of
+        artificial intelligence, software architecture, engineering leadership, and my endless
+        fascination with quantum computing and space exploration.
+      </p>
+
+      <h2>What You'll Find Here</h2>
+      <p>This blog covers four main areas:</p>
+      <ul>
+        <li>
+          <strong>AI-Driven Engineering:</strong> Practical insights on integrating AI tools into
+          software development workflows, evaluating LLMs, and building AI-powered features.
+        </li>
+        <li>
+          <strong>Software Architecture:</strong> Lessons learned from designing scalable systems,
+          making technology choices, and navigating the ever-evolving landscape of modern software.
+        </li>
+        <li>
+          <strong>Engineering Leadership:</strong> Thoughts on building teams, fostering engineering
+          culture, and the human side of technical organizations.
+        </li>
+        <li>
+          <strong>The Curiosity Corner:</strong> Deep dives into quantum computing concepts, space
+          technology, and other topics that fuel my intellectual curiosity.
+        </li>
+      </ul>
+
+      <h2>About the Name</h2>
+      <p>
+        The name "Bits & Qubits" reflects the duality of my interests. Classical computing deals
+        with bits — the fundamental 0s and 1s that power everything from your smartphone to massive
+        data centers. Quantum computing introduces qubits — quantum bits that can exist in
+        superposition, representing both 0 and 1 simultaneously.
+      </p>
+      <p>
+        The logo <span class="font-mono text-indigo-600 dark:text-indigo-400">⟨B|Q⟩</span> is
+        styled after bra-ket notation, the standard mathematical notation used in quantum mechanics.
+        It's a small nod to the quantum world that fascinates me.
+      </p>
+
+      <h2>Get in Touch</h2>
+      <p>
+        I love connecting with fellow engineers, curious minds, and anyone interested in these
+        topics. You can find me on:
+      </p>
+      <ul>
+        <li><a href={SOCIAL_LINKS.github} target="_blank" rel="noopener noreferrer">GitHub</a></li>
+        <li><a href={SOCIAL_LINKS.twitter} target="_blank" rel="noopener noreferrer">Twitter/X</a></li>
+        <li><a href={SOCIAL_LINKS.linkedin} target="_blank" rel="noopener noreferrer">LinkedIn</a></li>
+      </ul>
+      <p>
+        Or subscribe to the <a href="/rss.xml">RSS feed</a> to stay updated on new posts.
+      </p>
+    </div>
+  </div>
+</BaseLayout>

@@ -1,0 +1,112 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import BlogCard from '../../components/BlogCard.astro';
+import { CATEGORIES } from '../../consts';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const categoryEntries = Object.entries(CATEGORIES) as [keyof typeof CATEGORIES, typeof CATEGORIES[keyof typeof CATEGORIES]][];
+
+const colorClasses = {
+  indigo: 'data-[active=true]:bg-indigo-100 data-[active=true]:text-indigo-700 dark:data-[active=true]:bg-indigo-900/50 dark:data-[active=true]:text-indigo-300',
+  emerald: 'data-[active=true]:bg-emerald-100 data-[active=true]:text-emerald-700 dark:data-[active=true]:bg-emerald-900/50 dark:data-[active=true]:text-emerald-300',
+  amber: 'data-[active=true]:bg-amber-100 data-[active=true]:text-amber-700 dark:data-[active=true]:bg-amber-900/50 dark:data-[active=true]:text-amber-300',
+  pink: 'data-[active=true]:bg-pink-100 data-[active=true]:text-pink-700 dark:data-[active=true]:bg-pink-900/50 dark:data-[active=true]:text-pink-300',
+} as const;
+---
+
+<BaseLayout title="Blog" description="All blog posts from Bits & Qubits">
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <header class="mb-8">
+      <h1 class="mb-4 text-3xl font-bold text-zinc-900 dark:text-zinc-100">Blog</h1>
+      <p class="text-zinc-600 dark:text-zinc-400">
+        Thoughts on AI, architecture, leadership, and the cosmos.
+      </p>
+    </header>
+
+    <!-- Category Filter -->
+    <div class="mb-8 flex flex-wrap gap-2" id="category-filter">
+      <button
+        data-category="all"
+        data-active="true"
+        class="rounded-full border border-zinc-200 px-4 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-zinc-300 data-[active=true]:border-transparent data-[active=true]:bg-zinc-900 data-[active=true]:text-white dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600 dark:data-[active=true]:bg-zinc-100 dark:data-[active=true]:text-zinc-900"
+      >
+        All
+      </button>
+      {categoryEntries.map(([slug, category]) => (
+        <button
+          data-category={slug}
+          data-active="false"
+          class:list={[
+            'rounded-full border border-zinc-200 px-4 py-1.5 text-sm font-medium text-zinc-600 transition-colors hover:border-zinc-300 dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-zinc-600',
+            colorClasses[category.color],
+          ]}
+        >
+          {category.name}
+        </button>
+      ))}
+    </div>
+
+    <!-- Posts Grid -->
+    <div class="grid gap-6 sm:grid-cols-2" id="posts-grid">
+      {posts.map((post) => (
+        <div data-category={post.data.category}>
+          <BlogCard post={post} />
+        </div>
+      ))}
+    </div>
+
+    {posts.length === 0 && (
+      <p class="text-center text-zinc-500 dark:text-zinc-400">No posts yet. Check back soon!</p>
+    )}
+  </div>
+</BaseLayout>
+
+<script>
+  const filterButtons = document.querySelectorAll('#category-filter button');
+  const postCards = document.querySelectorAll('#posts-grid > div');
+
+  // Check for URL parameter on load
+  const urlParams = new URLSearchParams(window.location.search);
+  const categoryParam = urlParams.get('category');
+
+  if (categoryParam) {
+    filterPosts(categoryParam);
+  }
+
+  filterButtons.forEach((button) => {
+    button.addEventListener('click', () => {
+      const category = button.getAttribute('data-category');
+      if (category) {
+        filterPosts(category);
+        // Update URL without reload
+        const url = new URL(window.location.href);
+        if (category === 'all') {
+          url.searchParams.delete('category');
+        } else {
+          url.searchParams.set('category', category);
+        }
+        window.history.replaceState({}, '', url);
+      }
+    });
+  });
+
+  function filterPosts(category: string) {
+    // Update button states
+    filterButtons.forEach((btn) => {
+      btn.setAttribute('data-active', btn.getAttribute('data-category') === category ? 'true' : 'false');
+    });
+
+    // Filter posts
+    postCards.forEach((card) => {
+      const postCategory = card.getAttribute('data-category');
+      if (category === 'all' || postCategory === category) {
+        (card as HTMLElement).style.display = 'block';
+      } else {
+        (card as HTMLElement).style.display = 'none';
+      }
+    });
+  }
+</script>
