@@ -1,0 +1,191 @@
+---
+import { getCollection } from 'astro:content';
+import { CATEGORIES } from '../consts';
+
+const posts = await getCollection('blog', ({ data }) => !data.draft);
+const searchData = posts.map(post => ({
+  slug: post.slug,
+  title: post.data.title,
+  description: post.data.description,
+  category: CATEGORIES[post.data.category].name,
+  tags: post.data.tags,
+}));
+---
+
+<div class="relative" id="search-container">
+  <button
+    id="search-toggle"
+    type="button"
+    class="rounded-lg p-2 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800 dark:hover:text-zinc-100"
+    aria-label="Search posts"
+  >
+    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+    </svg>
+  </button>
+
+  <!-- Search Modal -->
+  <div
+    id="search-modal"
+    class="fixed inset-0 z-[100] hidden items-start justify-center bg-zinc-900/50 pt-[10vh] backdrop-blur-sm"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="search-label"
+  >
+    <div class="relative mx-4 w-full max-w-xl rounded-xl bg-white shadow-2xl dark:bg-zinc-900">
+      <div class="flex items-center border-b border-zinc-200 px-4 dark:border-zinc-700">
+        <svg class="h-5 w-5 text-zinc-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <input
+          id="search-input"
+          type="text"
+          placeholder="Search posts..."
+          class="w-full bg-transparent px-4 py-4 text-zinc-900 placeholder-zinc-400 outline-none dark:text-zinc-100"
+          autocomplete="off"
+        />
+        <kbd class="hidden rounded bg-zinc-100 px-2 py-1 text-xs text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400 sm:block">ESC</kbd>
+      </div>
+
+      <div id="search-results" class="max-h-[60vh] overflow-y-auto p-2">
+        <p id="search-placeholder" class="p-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          Start typing to search...
+        </p>
+        <ul id="search-results-list" class="hidden space-y-1"></ul>
+        <p id="search-no-results" class="hidden p-4 text-center text-sm text-zinc-500 dark:text-zinc-400">
+          No results found
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script define:vars={{ searchData }}>
+  // Store search data globally for use in the search script
+  window.__SEARCH_DATA__ = searchData;
+</script>
+
+<script>
+  import Fuse from 'fuse.js';
+
+  function initSearch() {
+    const searchToggle = document.getElementById('search-toggle');
+    const searchModal = document.getElementById('search-modal');
+    const searchInput = document.getElementById('search-input') as HTMLInputElement | null;
+    const searchResultsList = document.getElementById('search-results-list');
+    const searchPlaceholder = document.getElementById('search-placeholder');
+    const searchNoResults = document.getElementById('search-no-results');
+
+    if (!searchToggle || !searchModal || !searchInput || !searchResultsList) return;
+
+    // Store references for use in nested functions
+    const modal = searchModal;
+    const input = searchInput;
+    const resultsList = searchResultsList;
+
+    const searchData = (window as any).__SEARCH_DATA__ || [];
+
+    const fuse = new Fuse(searchData, {
+      keys: [
+        { name: 'title', weight: 2 },
+        { name: 'description', weight: 1 },
+        { name: 'tags', weight: 1.5 },
+        { name: 'category', weight: 0.5 },
+      ],
+      threshold: 0.4,
+      includeScore: true,
+    });
+
+    function openModal() {
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      input.focus();
+      document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      input.value = '';
+      document.body.style.overflow = '';
+      showPlaceholder();
+    }
+
+    function showPlaceholder() {
+      searchPlaceholder?.classList.remove('hidden');
+      resultsList.classList.add('hidden');
+      searchNoResults?.classList.add('hidden');
+    }
+
+    function showNoResults() {
+      searchPlaceholder?.classList.add('hidden');
+      resultsList.classList.add('hidden');
+      searchNoResults?.classList.remove('hidden');
+    }
+
+    function showResults() {
+      searchPlaceholder?.classList.add('hidden');
+      resultsList.classList.remove('hidden');
+      searchNoResults?.classList.add('hidden');
+    }
+
+    function renderResults(results: any[]) {
+      if (results.length === 0) {
+        showNoResults();
+        return;
+      }
+
+      showResults();
+      resultsList.innerHTML = results.map(({ item }) => `
+        <li>
+          <a
+            href="/blog/${item.slug}"
+            class="block rounded-lg px-4 py-3 hover:bg-zinc-100 dark:hover:bg-zinc-800"
+          >
+            <div class="font-medium text-zinc-900 dark:text-zinc-100">${item.title}</div>
+            <div class="mt-1 text-sm text-zinc-500 dark:text-zinc-400 line-clamp-1">${item.description}</div>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <span class="text-xs text-indigo-600 dark:text-indigo-400">${item.category}</span>
+              ${item.tags.map((tag: string) => `<span class="text-xs text-zinc-400 dark:text-zinc-500">#${tag}</span>`).join('')}
+            </div>
+          </a>
+        </li>
+      `).join('');
+    }
+
+    // Event listeners
+    searchToggle.addEventListener('click', openModal);
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+    });
+
+    document.addEventListener('keydown', (e) => {
+      // Open with Cmd/Ctrl + K
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openModal();
+      }
+      // Close with Escape
+      if (e.key === 'Escape') {
+        closeModal();
+      }
+    });
+
+    input.addEventListener('input', (e) => {
+      const query = (e.target as HTMLInputElement).value.trim();
+      if (!query) {
+        showPlaceholder();
+        return;
+      }
+      const results = fuse.search(query).slice(0, 10);
+      renderResults(results);
+    });
+  }
+
+  // Initialize on load
+  initSearch();
+
+  // Re-initialize on Astro page transitions
+  document.addEventListener('astro:after-swap', initSearch);
+</script>

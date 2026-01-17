@@ -1,0 +1,87 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { getCollection } from 'astro:content';
+import { CATEGORIES } from '../consts';
+
+interface Props {
+  currentPost: CollectionEntry<'blog'>;
+  maxPosts?: number;
+}
+
+const { currentPost, maxPosts = 3 } = Astro.props;
+
+// Get all posts except current one
+const allPosts = (await getCollection('blog', ({ data }) => !data.draft))
+  .filter(post => post.slug !== currentPost.slug);
+
+// Score posts by relevance
+function getRelevanceScore(post: CollectionEntry<'blog'>): number {
+  let score = 0;
+
+  // Same category = 3 points
+  if (post.data.category === currentPost.data.category) {
+    score += 3;
+  }
+
+  // Each matching tag = 2 points
+  const currentTags = new Set(currentPost.data.tags);
+  post.data.tags.forEach(tag => {
+    if (currentTags.has(tag)) {
+      score += 2;
+    }
+  });
+
+  // Recency bonus (posts within 30 days get 1 extra point)
+  const daysDiff = Math.abs(post.data.pubDate.getTime() - currentPost.data.pubDate.getTime()) / (1000 * 60 * 60 * 24);
+  if (daysDiff <= 30) {
+    score += 1;
+  }
+
+  return score;
+}
+
+// Sort by relevance, then by date
+const relatedPosts = allPosts
+  .map(post => ({ post, score: getRelevanceScore(post) }))
+  .filter(({ score }) => score > 0)
+  .sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.post.data.pubDate.getTime() - a.post.data.pubDate.getTime();
+  })
+  .slice(0, maxPosts)
+  .map(({ post }) => post);
+
+const colorClasses = {
+  indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
+  emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300',
+  amber: 'bg-amber-100 text-amber-700 dark:bg-amber-900/50 dark:text-amber-300',
+  pink: 'bg-pink-100 text-pink-700 dark:bg-pink-900/50 dark:text-pink-300',
+} as const;
+---
+
+{relatedPosts.length > 0 && (
+  <section class="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+    <h2 class="mb-6 text-xl font-bold text-zinc-900 dark:text-zinc-100">Related Posts</h2>
+    <div class="grid gap-4 sm:grid-cols-3">
+      {relatedPosts.map((post) => {
+        const category = CATEGORIES[post.data.category];
+        return (
+          <a
+            href={`/blog/${post.slug}`}
+            class="group rounded-lg border border-zinc-200 p-4 transition-all hover:border-zinc-300 hover:shadow-sm dark:border-zinc-800 dark:hover:border-zinc-700"
+          >
+            <span class:list={['inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium mb-2', colorClasses[category.color]]}>
+              {category.name}
+            </span>
+            <h3 class="font-medium text-zinc-900 group-hover:text-indigo-600 dark:text-zinc-100 dark:group-hover:text-indigo-400 line-clamp-2">
+              {post.data.title}
+            </h3>
+            <p class="mt-1 text-sm text-zinc-500 dark:text-zinc-400 line-clamp-2">
+              {post.data.description}
+            </p>
+          </a>
+        );
+      })}
+    </div>
+  </section>
+)}

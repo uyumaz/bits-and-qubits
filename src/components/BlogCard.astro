@@ -2,6 +2,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { CATEGORIES } from '../consts';
 import FormattedDate from './FormattedDate.astro';
+import { calculateReadingTime, formatReadingTime } from '../utils/readingTime';
 
 interface Props {
   post: CollectionEntry<'blog'>;
@@ -9,6 +10,9 @@ interface Props {
 
 const { post } = Astro.props;
 const category = CATEGORIES[post.data.category];
+
+// Calculate reading time from post body
+const readingTime = calculateReadingTime(post.body);
 
 const colorClasses = {
   indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
@@ -19,13 +23,15 @@ const colorClasses = {
 ---
 
 <article class="group relative flex flex-col rounded-lg border border-zinc-200 bg-white p-6 shadow-sm transition-all hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900">
-  <div class="mb-3 flex items-center gap-3">
+  <div class="mb-3">
     <span class:list={['inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium', colorClasses[category.color]]}>
       {category.name}
     </span>
-    <span class="text-xs text-zinc-500 dark:text-zinc-400">
+    <div class="mt-2 flex items-center gap-2 text-xs text-zinc-500 dark:text-zinc-400">
       <FormattedDate date={post.data.pubDate} />
-    </span>
+      <span class="text-zinc-300 dark:text-zinc-600">·</span>
+      <span>{formatReadingTime(readingTime)}</span>
+    </div>
   </div>
 
   <h3 class="mb-2 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
@@ -39,11 +45,14 @@ const colorClasses = {
   </p>
 
   {post.data.tags.length > 0 && (
-    <div class="flex flex-wrap gap-2">
+    <div class="relative z-10 flex flex-wrap gap-2">
       {post.data.tags.map((tag) => (
-        <span class="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-          {tag}
-        </span>
+        <a
+          href={`/blog/tag/${tag}`}
+          class="rounded bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+        >
+          #{tag}
+        </a>
       ))}
     </div>
   )}

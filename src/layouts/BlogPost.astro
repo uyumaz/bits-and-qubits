@@ -3,7 +3,10 @@ import type { CollectionEntry } from 'astro:content';
 import BaseLayout from './BaseLayout.astro';
 import FormattedDate from '../components/FormattedDate.astro';
 import Giscus from '../components/Giscus.astro';
+import RelatedPosts from '../components/RelatedPosts.astro';
+import SubscribeCard from '../components/SubscribeCard.astro';
 import { CATEGORIES } from '../consts';
+import { calculateReadingTime, formatReadingTime } from '../utils/readingTime';
 
 interface Props {
   post: CollectionEntry<'blog'>;
@@ -12,6 +15,7 @@ interface Props {
 const { post } = Astro.props;
 const { title, description, pubDate, updatedDate, heroImage, tags, category } = post.data;
 const categoryInfo = CATEGORIES[category];
+const readingTime = calculateReadingTime(post.body);
 
 const colorClasses = {
   indigo: 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-300',
@@ -24,12 +28,29 @@ const colorClasses = {
 <BaseLayout title={title} description={description} image={heroImage}>
   <article class="mx-auto max-w-3xl px-4 py-12">
     <header class="mb-8">
+      <!-- Back link at top for easy navigation -->
+      <a
+        href="/blog"
+        class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-zinc-500 hover:text-indigo-600 dark:text-zinc-400 dark:hover:text-indigo-400"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        Back to all posts
+      </a>
+
       <div class="mb-4 flex flex-wrap items-center gap-3">
-        <span class:list={['inline-flex items-center rounded-full px-3 py-1 text-sm font-medium', colorClasses[categoryInfo.color]]}>
+        <a
+          href={`/blog?category=${category}`}
+          class:list={['inline-flex items-center rounded-full px-3 py-1 text-sm font-medium transition-opacity hover:opacity-80', colorClasses[categoryInfo.color]]}
+        >
           {categoryInfo.name}
-        </span>
+        </a>
         <span class="text-sm text-zinc-500 dark:text-zinc-400">
           <FormattedDate date={pubDate} />
+        </span>
+        <span class="text-sm text-zinc-400 dark:text-zinc-500">
+          · {formatReadingTime(readingTime)}
         </span>
         {updatedDate && (
           <span class="text-sm text-zinc-500 dark:text-zinc-400">
@@ -49,9 +70,12 @@ const colorClasses = {
       {tags.length > 0 && (
         <div class="mt-4 flex flex-wrap gap-2">
           {tags.map((tag) => (
-            <span class="rounded bg-zinc-100 px-2.5 py-1 text-sm text-zinc-600 dark:bg-zinc-800 dark:text-zinc-400">
-              {tag}
-            </span>
+            <a
+              href={`/blog/tag/${tag}`}
+              class="rounded bg-zinc-100 px-2.5 py-1 text-sm text-zinc-600 transition-colors hover:bg-zinc-200 hover:text-zinc-900 dark:bg-zinc-800 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-200"
+            >
+              #{tag}
+            </a>
           ))}
         </div>
       )}
@@ -68,6 +92,14 @@ const colorClasses = {
     <div class="prose prose-zinc max-w-none dark:prose-invert prose-headings:scroll-mt-20 prose-a:text-indigo-600 prose-a:no-underline hover:prose-a:underline dark:prose-a:text-indigo-400">
       <slot />
     </div>
+
+    <!-- Subscribe Card -->
+    <div class="mt-12">
+      <SubscribeCard />
+    </div>
+
+    <!-- Related Posts -->
+    <RelatedPosts currentPost={post} />
 
     <footer class="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
       <a

@@ -64,8 +64,15 @@ const pageTitle = title ? `${title} | ${SITE_TITLE}` : SITE_TITLE;
     </script>
   </head>
   <body class="min-h-screen bg-white font-sans text-zinc-900 antialiased dark:bg-zinc-950 dark:text-zinc-100">
+    <!-- Skip to main content link for accessibility -->
+    <a
+      href="#main-content"
+      class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-indigo-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none"
+    >
+      Skip to main content
+    </a>
     <Header />
-    <main>
+    <main id="main-content">
       <slot />
     </main>
     <Footer />

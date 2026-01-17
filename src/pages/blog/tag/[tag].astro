@@ -1,0 +1,61 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../../../layouts/BaseLayout.astro';
+import BlogCard from '../../../components/BlogCard.astro';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
+
+  // Get all unique tags
+  const tags = [...new Set(posts.flatMap(post => post.data.tags))];
+
+  return tags.map(tag => ({
+    params: { tag },
+    props: {
+      tag,
+      posts: posts
+        .filter(post => post.data.tags.includes(tag))
+        .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()),
+    },
+  }));
+}
+
+interface Props {
+  tag: string;
+  posts: Awaited<ReturnType<typeof getCollection<'blog'>>>;
+}
+
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`Posts tagged "${tag}"`} description={`All posts tagged with "${tag}" on Bits & Qubits`}>
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <header class="mb-8">
+      <a
+        href="/blog"
+        class="mb-4 inline-flex items-center gap-2 text-sm font-medium text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+        </svg>
+        All posts
+      </a>
+      <h1 class="mb-2 text-3xl font-bold text-zinc-900 dark:text-zinc-100">
+        <span class="text-zinc-400 dark:text-zinc-500">#</span>{tag}
+      </h1>
+      <p class="text-zinc-600 dark:text-zinc-400">
+        {posts.length} {posts.length === 1 ? 'post' : 'posts'} tagged with "{tag}"
+      </p>
+    </header>
+
+    <div class="grid gap-6 sm:grid-cols-2">
+      {posts.map((post) => (
+        <BlogCard post={post} />
+      ))}
+    </div>
+
+    {posts.length === 0 && (
+      <p class="text-center text-zinc-500 dark:text-zinc-400">No posts with this tag yet.</p>
+    )}
+  </div>
+</BaseLayout>
