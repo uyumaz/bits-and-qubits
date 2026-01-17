@@ -6,7 +6,8 @@
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",
-    "build": "astro check && astro build",
+    "check-links": "node scripts/check-links.js",
+    "build": "astro check && astro build && npm run check-links",
     "preview": "astro preview",
     "astro": "astro"
   },

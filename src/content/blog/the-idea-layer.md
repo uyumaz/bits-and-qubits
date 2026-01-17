@@ -1,8 +1,8 @@
 ---
 title: "The Idea Layer"
-description: "Software Development's Next Abstraction"
+description: "We're shifting from code as the unit of work to ideas as the unit of work. Exploring how AI is transforming developers into orchestrators and why legacy migration may be the unexpected killer app."
 pubDate: 2026-01-17
-category: "architecture"
+category: "ai-engineering"
 tags: ["AI", "software-engineering", "future-of-work"]
 draft: false
 ---
@@ -98,7 +98,7 @@ Welcome to the idea layer.
 
 - [The Future of AI-Driven Software Engineering](https://dl.acm.org/doi/10.1145/3715003): ACM paper on the symbiotic partnership between human developers and AI
 - [2026: The Year Software Engineering Will Become AI Native](https://analyticsindiamag.com/ai-highlights/2026-the-year-software-engineering-will-become-ai-native/): Analysis of how "vibe coding" is reshaping engineering
-- [The Paradigm Shift from Reactive to Proactive AI](https://dev.to/kirodotdev/the-paradigm-shift-from-reactive-to-proactive-ai-in-software-development-a-comparative-analysis-of-3al): Comparative analysis of AI IDEs and the agentic shift
+- [From Today's Code to Tomorrow's Symphony](https://arxiv.org/html/2405.12731v1): The AI transformation of developer routines
 
 ### Spec-Driven Development
 

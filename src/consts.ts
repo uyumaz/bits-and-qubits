@@ -34,7 +34,6 @@ export const CATEGORIES = {
 export type Category = keyof typeof CATEGORIES;
 
 export const SOCIAL_LINKS = {
-  github: 'https://github.com/yourusername',
-  twitter: 'https://twitter.com/yourusername',
-  linkedin: 'https://linkedin.com/in/yourusername',
+  github: 'https://github.com/uyumaz',
+  linkedin: 'https://linkedin.com/in/uyumaz',
 };
