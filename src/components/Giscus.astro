@@ -1,0 +1,61 @@
+---
+// Get your repo ID and category ID from https://giscus.app
+const repo = 'uyumaz/bits-and-qubits';
+const repoId = 'R_kgDOQ7ZV2g'; // Fill this in from giscus.app
+const category = 'Announcements'; // or your preferred category
+const categoryId = 'DIC_kwDOQ7ZV2s4C1Ebw'; // Fill this in from giscus.app
+---
+
+<section class="mt-12 border-t border-zinc-200 pt-8 dark:border-zinc-800">
+  <h2 class="mb-6 text-xl font-semibold text-zinc-900 dark:text-zinc-100">Comments</h2>
+  <div id="giscus-container">
+    <script
+      src="https://giscus.app/client.js"
+      data-repo={repo}
+      data-repo-id={repoId}
+      data-category={category}
+      data-category-id={categoryId}
+      data-mapping="pathname"
+      data-strict="0"
+      data-reactions-enabled="1"
+      data-emit-metadata="0"
+      data-input-position="top"
+      data-theme="preferred_color_scheme"
+      data-lang="en"
+      data-loading="lazy"
+      crossorigin="anonymous"
+      async
+    ></script>
+  </div>
+</section>
+
+<script>
+  function updateGiscusTheme() {
+    const isDark = document.documentElement.classList.contains('dark');
+    const theme = isDark ? 'dark' : 'light';
+
+    const iframe = document.querySelector<HTMLIFrameElement>('iframe.giscus-frame');
+    if (iframe) {
+      iframe.contentWindow?.postMessage(
+        { giscus: { setConfig: { theme } } },
+        'https://giscus.app'
+      );
+    }
+  }
+
+  // Watch for theme changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        updateGiscusTheme();
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, { attributes: true });
+
+  // Handle Astro page transitions
+  document.addEventListener('astro:after-swap', () => {
+    updateGiscusTheme();
+  });
+</script>
