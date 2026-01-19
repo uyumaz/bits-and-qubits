@@ -10,7 +10,7 @@ export async function GET(context: APIContext) {
   return rss({
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
-    site: context.site ?? 'https://bits-and-qubits.dev',
+    site: context.site ?? 'https://bitqubit.space',
     items: sortedPosts.map((post) => ({
       title: post.data.title,
       pubDate: post.data.pubDate,
